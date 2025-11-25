@@ -54,15 +54,23 @@ app.use((req, res) => {
 
 // Error handler - must be after all routes
 app.use((err, req, res, next) => {
+  console.error('=== GLOBAL ERROR HANDLER ===');
   console.error('Error stack:', err.stack);
   console.error('Error message:', err.message);
   console.error('Error code:', err.code);
+  console.error('Request URL:', req.url);
+  console.error('Request method:', req.method);
   
   // Ensure we always send JSON
   if (!res.headersSent) {
-    res.status(err.status || 500).json({ 
+    const statusCode = err.status || err.statusCode || 500;
+    res.status(statusCode).json({ 
       error: err.message || 'Something went wrong!',
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+      ...(process.env.NODE_ENV === 'development' && { 
+        stack: err.stack,
+        code: err.code,
+        details: err.details
+      })
     });
   }
 });

@@ -11,8 +11,8 @@ router.post('/send-otp', async (req, res) => {
   try {
     const { phoneNumber } = req.body;
 
-    if (!phoneNumber) {
-      return res.status(400).json({ error: 'Phone number is required' });
+    if (!phoneNumber || phoneNumber.trim() === '') {
+      return res.status(400).json({ error: 'Phone number is required to send OTP' });
     }
 
     // Format and validate phone number
@@ -94,33 +94,10 @@ router.post('/register', async (req, res) => {
   try {
     const { email, password, name, role, phoneNumber, otp } = req.body;
 
+    console.log('Registration request:', { email, name, hasPhone: !!phoneNumber, hasOtp: !!otp });
+
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, password, and name are required' });
-    }
-
-    // Phone number is required for registration
-    if (!phoneNumber) {
-      return res.status(400).json({ error: 'Phone number is required' });
-    }
-
-    // Format and validate phone number
-    const formattedPhone = formatPhoneNumber(phoneNumber);
-    if (!validatePhoneNumber(formattedPhone)) {
-      return res.status(400).json({ error: 'Invalid phone number format' });
-    }
-
-    // Verify OTP if provided (for registration)
-    if (otp) {
-      const verification = verifyOTP(formattedPhone, otp);
-      if (!verification.valid) {
-        return res.status(400).json({ error: `Phone verification failed: ${verification.error}` });
-      }
-    } else {
-      // In development, allow registration without OTP (for testing)
-      // In production, require OTP verification
-      if (process.env.NODE_ENV === 'production') {
-        return res.status(400).json({ error: 'OTP verification is required' });
-      }
     }
 
     // Check if user already exists (email)
@@ -133,28 +110,71 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Check if phone number is already registered
-    const existingUserByPhone = await prisma.user.findUnique({
-      where: { phoneNumber: formattedPhone }
-    });
+    // Phone number is optional - only process if provided and not empty
+    let formattedPhone = null;
+    let phoneVerified = false;
 
-    if (existingUserByPhone) {
-      return res.status(400).json({ error: 'Phone number is already registered' });
+    // Check if phoneNumber is provided and not empty
+    // Handle both string and non-string values
+    const hasPhoneNumber = phoneNumber !== null && 
+                          phoneNumber !== undefined && 
+                          phoneNumber !== '' && 
+                          String(phoneNumber).trim() !== '';
+
+    if (hasPhoneNumber) {
+      // Format and validate phone number
+      formattedPhone = formatPhoneNumber(String(phoneNumber));
+      if (!validatePhoneNumber(formattedPhone)) {
+        return res.status(400).json({ error: 'Invalid phone number format' });
+      }
+
+      // Verify OTP if provided (for registration) - OTP is optional
+      // If OTP is provided but invalid, we still allow registration (phoneVerified = false)
+      if (otp && otp !== '' && String(otp).trim() !== '') {
+        const verification = verifyOTP(formattedPhone, String(otp));
+        if (verification.valid) {
+          phoneVerified = true;
+          console.log('Phone number verified with OTP');
+        } else {
+          // OTP verification failed, but since verification is optional, we continue
+          // User will be registered with phoneVerified = false
+          console.log(`OTP verification failed for ${formattedPhone}: ${verification.error}`);
+          console.log('Continuing registration without phone verification (optional)');
+        }
+      } else {
+        // No OTP provided - registration continues without verification
+        console.log('No OTP provided, registering without phone verification');
+      }
+
+      // Check if phone number is already registered
+      const existingUserByPhone = await prisma.user.findUnique({
+        where: { phoneNumber: formattedPhone }
+      });
+
+      if (existingUserByPhone) {
+        return res.status(400).json({ error: 'Phone number is already registered' });
+      }
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user (store email in lowercase)
+    const userData = {
+      email: normalizedEmail,
+      password: hashedPassword,
+      name,
+      role: role || 'user'
+    };
+
+    // Only add phone number if provided
+    if (formattedPhone) {
+      userData.phoneNumber = formattedPhone;
+      userData.phoneVerified = phoneVerified;
+    }
+
     const user = await prisma.user.create({
-      data: {
-        email: normalizedEmail,
-        password: hashedPassword,
-        name,
-        phoneNumber: formattedPhone,
-        phoneVerified: otp ? true : false, // Verified if OTP was provided
-        role: role || 'user'
-      },
+      data: userData,
       select: {
         id: true,
         email: true,
@@ -179,7 +199,12 @@ router.post('/register', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error('Error registering user:', error);
+    console.error('=== REGISTRATION ERROR ===');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error stack:', error.stack);
+    console.error('Error meta:', error.meta);
     
     // Handle Prisma unique constraint errors
     if (error.code === 'P2002') {
@@ -192,7 +217,27 @@ router.post('/register', async (req, res) => {
       }
     }
     
-    res.status(500).json({ error: 'Failed to register user' });
+    // Handle database connection errors
+    if (error.code === 'P1001' || error.message?.includes("Can't reach database server")) {
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please try again later.',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+    
+    // Handle Prisma client errors
+    if (error.message?.includes('Prisma Client') || error.message?.includes('not initialized')) {
+      return res.status(500).json({ 
+        error: 'Database service error. Please contact support.',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+    
+    // Generic error response
+    res.status(500).json({ 
+      error: 'Failed to register user',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
