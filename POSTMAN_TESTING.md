@@ -17,7 +17,7 @@ https://your-backend-name.vercel.app/api/auth/register
 
 ### Registration Endpoint
 ```
-POST https://your-backend.vercel.app/api/auth/register
+POST https://backend-repo.vercel.app/api/auth/register
 ```
 
 ### Login Endpoint
