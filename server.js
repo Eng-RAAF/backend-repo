@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 // CORS configuration - allow frontend domain
+//waxaan rabaa updat
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, Postman, or curl)
