@@ -200,11 +200,24 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('=== REGISTRATION ERROR ===');
+    console.error('Timestamp:', new Date().toISOString());
     console.error('Error name:', error.name);
     console.error('Error message:', error.message);
     console.error('Error code:', error.code);
     console.error('Error stack:', error.stack);
-    console.error('Error meta:', error.meta);
+    console.error('Error meta:', JSON.stringify(error.meta, null, 2));
+    console.error('Request body:', JSON.stringify({ 
+      email: req.body?.email, 
+      name: req.body?.name, 
+      hasPassword: !!req.body?.password,
+      hasPhone: !!req.body?.phoneNumber 
+    }));
+    console.error('Environment:', {
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL: process.env.VERCEL,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      hasJwtSecret: !!process.env.JWT_SECRET
+    });
     
     // Handle Prisma unique constraint errors
     if (error.code === 'P2002') {
@@ -215,28 +228,55 @@ router.post('/register', async (req, res) => {
       if (field === 'phoneNumber') {
         return res.status(400).json({ error: 'Phone number already exists' });
       }
+      return res.status(400).json({ 
+        error: `This ${field} is already in use`,
+        field: field
+      });
     }
     
     // Handle database connection errors
-    if (error.code === 'P1001' || error.message?.includes("Can't reach database server")) {
+    if (error.code === 'P1001' || 
+        error.message?.includes("Can't reach database server") ||
+        error.message?.includes('connection') ||
+        error.message?.includes('prepared statement') ||
+        error.message?.includes('WSAStartup')) {
+      console.error('Database connection error detected');
       return res.status(500).json({ 
         error: 'Database connection failed. Please try again later.',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' || process.env.VERCEL ? error.message : undefined,
+        code: error.code
       });
     }
     
     // Handle Prisma client errors
-    if (error.message?.includes('Prisma Client') || error.message?.includes('not initialized')) {
+    if (error.message?.includes('Prisma Client') || 
+        error.message?.includes('not initialized') ||
+        error.message?.includes('not found')) {
+      console.error('Prisma Client error detected');
       return res.status(500).json({ 
         error: 'Database service error. Please contact support.',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' || process.env.VERCEL ? error.message : undefined
       });
     }
     
-    // Generic error response
+    // Handle validation errors
+    if (error.name === 'ValidationError' || error.code === 'P2003') {
+      return res.status(400).json({ 
+        error: error.message || 'Validation error',
+        details: process.env.NODE_ENV === 'development' || process.env.VERCEL ? error.message : undefined
+      });
+    }
+    
+    // Generic error response - include more details in Vercel for debugging
+    const isVercel = process.env.VERCEL === '1';
     res.status(500).json({ 
       error: 'Failed to register user',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: (process.env.NODE_ENV === 'development' || isVercel) ? error.message : undefined,
+      code: error.code,
+      ...(isVercel && { 
+        errorName: error.name,
+        hint: 'Check Vercel function logs for more details'
+      })
     });
   }
 });
