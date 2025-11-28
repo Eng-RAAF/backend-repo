@@ -248,10 +248,30 @@ router.post('/register', async (req, res) => {
       });
     }
     
+    // Handle Supabase "Tenant or user not found" error
+    if (error.message?.includes('Tenant or user not found') || 
+        error.message?.includes('FATAL: Tenant or user not found')) {
+      console.error('Supabase connection error: Invalid DATABASE_URL');
+      return res.status(500).json({ 
+        error: 'Database connection failed: Invalid credentials or project reference',
+        details: 'The DATABASE_URL in Vercel environment variables is incorrect. Please check:',
+        instructions: [
+          '1. Go to Supabase Dashboard → Your Project → Settings → Database',
+          '2. Copy the "Connection string" under "Connection pooling"',
+          '3. OR use "Direct connection" (port 6543) for better reliability',
+          '4. Make sure to replace [YOUR-PASSWORD] with your actual database password',
+          '5. Update DATABASE_URL in Vercel Backend project → Settings → Environment Variables',
+          '6. Format should be: postgresql://postgres.[PROJECT-REF]:[PASSWORD]@[HOST]:[PORT]/postgres',
+          '7. Redeploy the backend after updating the variable'
+        ],
+        hint: 'This error usually means the project reference, password, or host in DATABASE_URL is incorrect'
+      });
+    }
+    
     // Handle Prisma client errors
     if (error.message?.includes('Prisma Client') || 
         error.message?.includes('not initialized') ||
-        error.message?.includes('not found')) {
+        (error.message?.includes('not found') && !error.message?.includes('Tenant'))) {
       console.error('Prisma Client error detected');
       return res.status(500).json({ 
         error: 'Database service error. Please contact support.',
