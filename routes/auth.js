@@ -270,6 +270,30 @@ router.post('/register', async (req, res) => {
       });
     }
     
+    // Handle DATABASE_URL validation errors
+    if (error.message?.includes('DATABASE_URL') || 
+        error.message?.includes('must start with the protocol') ||
+        error.message?.includes('postgresql://') ||
+        error.message?.includes('postgres://')) {
+      console.error('DATABASE_URL validation error detected');
+      return res.status(500).json({ 
+        error: 'Database configuration error: DATABASE_URL is missing or invalid',
+        details: 'The DATABASE_URL environment variable is not set correctly in Vercel.',
+        instructions: [
+          '1. Go to Vercel Dashboard → Your Backend Project → Settings → Environment Variables',
+          '2. Check if DATABASE_URL exists and has a valid value',
+          '3. DATABASE_URL must start with "postgresql://" or "postgres://"',
+          '4. Get the connection string from Supabase Dashboard → Settings → Database',
+          '5. Use "Direct connection" (port 6543) for better reliability',
+          '6. Format: postgresql://postgres.[PROJECT-REF]:[PASSWORD]@[HOST]:6543/postgres',
+          '7. Replace [YOUR-PASSWORD] with your actual database password',
+          '8. Make sure it\'s set for Production, Preview, and Development',
+          '9. Redeploy the backend after updating'
+        ],
+        hint: 'This error means DATABASE_URL is either missing, empty, or has an invalid format in Vercel environment variables.'
+      });
+    }
+    
     // Handle Prisma client errors
     if (error.message?.includes('Prisma Client') || 
         error.message?.includes('not initialized') ||
