@@ -187,6 +187,7 @@ router.post('/register', async (req, res) => {
     });
 
     // Generate JWT token
+    //guul
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key-change-in-production',
