@@ -49,6 +49,7 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
+// maxamuud
 
 app.use(cors(corsOptions));
 app.use(express.json());
