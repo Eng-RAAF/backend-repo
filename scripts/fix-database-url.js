@@ -29,7 +29,7 @@ if (currentUrl.includes('?')) {
   console.log('Current URL:', currentUrl);
   console.log('\nTrying different connection formats...\n');
 } else {
-  // Try adding Supabase pooler parameters
+  // Try adding connection pooler parameters
   const newUrl = currentUrl + '?pgbouncer=true&connection_limit=1';
   console.log('✅ Suggested fix: Add pooler parameters');
   console.log('New DATABASE_URL:', newUrl);
@@ -52,11 +52,11 @@ console.log('1. Use direct connection (port 6543 instead of 5432):');
 console.log('   Change port from :5432 to :6543');
 console.log('   Add: ?sslmode=require\n');
 
-console.log('2. Check Supabase dashboard:');
-console.log('   - Go to Settings → Database');
-console.log('   - Copy the "Connection pooling" connection string');
-console.log('   - Make sure your project is not paused\n');
+console.log('2. Check your database provider dashboard:');
+console.log('   - Go to your database settings');
+console.log('   - Copy the connection string');
+console.log('   - Make sure your database is active\n');
 
 console.log('3. Try without pooler (direct connection):');
-console.log('   Use the "Direct connection" string from Supabase dashboard\n');
+console.log('   Use the direct connection string from your database provider\n');
 

@@ -20,7 +20,10 @@
     "prisma:studio": "npx prisma studio",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:fix": "powershell -ExecutionPolicy Bypass -File scripts/fix-prisma-lock.ps1",
-    "check-prisma": "node scripts/check-prisma.js"
+    "check-prisma": "node scripts/check-prisma.js",
+    "convex:dev": "npx convex dev",
+    "convex:deploy": "npx convex deploy",
+    "convex:init": "npx convex dev --once"
   },
   "keywords": [
     "class-management",
@@ -32,6 +35,7 @@
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
+    "convex": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",

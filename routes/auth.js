@@ -250,23 +250,21 @@ router.post('/register', async (req, res) => {
       });
     }
     
-    // Handle Supabase "Tenant or user not found" error
+    // Handle database "Tenant or user not found" error
     if (error.message?.includes('Tenant or user not found') || 
         error.message?.includes('FATAL: Tenant or user not found')) {
-      console.error('Supabase connection error: Invalid DATABASE_URL');
+      console.error('Database connection error: Invalid DATABASE_URL');
       return res.status(500).json({ 
-        error: 'Database connection failed: Invalid credentials or project reference',
+        error: 'Database connection failed: Invalid credentials',
         details: 'The DATABASE_URL in Vercel environment variables is incorrect. Please check:',
         instructions: [
-          '1. Go to Supabase Dashboard → Your Project → Settings → Database',
-          '2. Copy the "Connection string" under "Connection pooling"',
-          '3. OR use "Direct connection" (port 6543) for better reliability',
-          '4. Make sure to replace [YOUR-PASSWORD] with your actual database password',
-          '5. Update DATABASE_URL in Vercel Backend project → Settings → Environment Variables',
-          '6. Format should be: postgresql://postgres.[PROJECT-REF]:[PASSWORD]@[HOST]:[PORT]/postgres',
-          '7. Redeploy the backend after updating the variable'
+          '1. Get your PostgreSQL connection string from your database provider',
+          '2. Format: postgresql://user:password@host:port/database',
+          '3. Make sure to use the correct username, password, host, and database name',
+          '4. Update DATABASE_URL in Vercel Backend project → Settings → Environment Variables',
+          '5. Redeploy the backend after updating the variable'
         ],
-        hint: 'This error usually means the project reference, password, or host in DATABASE_URL is incorrect'
+        hint: 'This error usually means the username, password, host, or database name in DATABASE_URL is incorrect'
       });
     }
     
@@ -283,12 +281,10 @@ router.post('/register', async (req, res) => {
           '1. Go to Vercel Dashboard → Your Backend Project → Settings → Environment Variables',
           '2. Check if DATABASE_URL exists and has a valid value',
           '3. DATABASE_URL must start with "postgresql://" or "postgres://"',
-          '4. Get the connection string from Supabase Dashboard → Settings → Database',
-          '5. Use "Direct connection" (port 6543) for better reliability',
-          '6. Format: postgresql://postgres.[PROJECT-REF]:[PASSWORD]@[HOST]:6543/postgres',
-          '7. Replace [YOUR-PASSWORD] with your actual database password',
-          '8. Make sure it\'s set for Production, Preview, and Development',
-          '9. Redeploy the backend after updating'
+          '4. Get the connection string from your database provider dashboard',
+          '5. Format: postgresql://user:password@host:port/database',
+          '6. Make sure it\'s set for Production, Preview, and Development',
+          '7. Redeploy the backend after updating'
         ],
         hint: 'This error means DATABASE_URL is either missing, empty, or has an invalid format in Vercel environment variables.'
       });

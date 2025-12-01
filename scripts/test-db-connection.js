@@ -26,9 +26,9 @@ async function testConnection() {
     console.error('Error:', error.message);
     console.error('Error code:', error.code);
     console.error('\nTroubleshooting steps:');
-    console.error('1. Check if your Supabase project is active (not paused)');
+    console.error('1. Check if your database is active and accessible');
     console.error('2. Verify your DATABASE_URL in .env file');
-    console.error('3. For Supabase, try adding ?pgbouncer=true&connection_limit=1 to your connection string');
+    console.error('3. For connection poolers, try adding ?pgbouncer=true&connection_limit=1 to your connection string');
     console.error('4. Check if your network/firewall allows connections to port 5432');
     console.error('5. Try using the direct connection URL instead of pooler');
     

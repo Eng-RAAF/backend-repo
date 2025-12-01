@@ -33,7 +33,7 @@ console.log('📋 Next Steps:');
 console.log('1. Your tables already exist in the database');
 console.log('2. The "prepared statement" error only affects db:push');
 console.log('3. Your application works fine with the current connection');
-console.log('4. If you need to modify schema, use Supabase SQL Editor\n');
+console.log('4. If you need to modify schema, use your database SQL editor\n');
 
 console.log('💡 Tip: You can ignore the db:push error if your app is working!');
 

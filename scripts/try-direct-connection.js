@@ -50,8 +50,8 @@ console.log('✅ Updated .env file with direct connection URL');
 console.log('Please test the connection with: node scripts/test-db-connection.js\n');
 
 console.log('If this still doesn\'t work, please:');
-console.log('1. Check your Supabase dashboard - make sure the project is ACTIVE (not paused)');
-console.log('2. Go to Settings → Database → Connection string');
-console.log('3. Copy the "Direct connection" string (not pooler)');
+console.log('1. Check your database provider dashboard - make sure the database is ACTIVE');
+console.log('2. Go to your database settings → Connection string');
+console.log('3. Copy the direct connection string (not pooler)');
 console.log('4. Update your .env file manually\n');
 

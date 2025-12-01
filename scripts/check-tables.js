@@ -32,8 +32,8 @@ async function checkTables() {
       console.log('You can now use the application normally.');
     } else {
       console.log('\n⚠️  Some tables are missing. You may need to push the schema.');
-      console.log('Try using Supabase SQL Editor to create tables manually, or');
-      console.log('contact Supabase support about the prepared statement issue.');
+      console.log('Try using your database SQL editor to create tables manually, or');
+      console.log('contact your database provider support about the prepared statement issue.');
     }
     
     process.exit(0);

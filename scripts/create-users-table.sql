@@ -1,5 +1,5 @@
 -- Create users table if it doesn't exist
--- This SQL can be run directly in Supabase SQL Editor
+-- This SQL can be run directly in your database SQL editor
 
 CREATE TABLE IF NOT EXISTS "users" (
     "id" SERIAL PRIMARY KEY,

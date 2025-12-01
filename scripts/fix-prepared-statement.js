@@ -98,7 +98,7 @@ async function fixPreparedStatement() {
     } else {
       console.log('⚠️  Some tables are missing.');
       console.log('\nSolutions:');
-      console.log('1. Run the SQL in scripts/create-users-table.sql via Supabase SQL Editor');
+      console.log('1. Run the SQL in scripts/create-users-table.sql via your database SQL editor');
       console.log('2. Or manually create missing tables');
     }
     console.log('='.repeat(50) + '\n');
