@@ -15,20 +15,7 @@ export const getStudentById = async (id) => {
 
 export const addStudent = async (studentData) => {
   try {
-    // Verify Prisma client and student model
-    if (!prisma) {
-      throw new Error('Prisma client is not initialized');
-    }
-    
-    if (!prisma.student) {
-      throw new Error('Prisma Student model not found. Please run: npm run prisma:generate');
-    }
-    
-    if (typeof prisma.student.create !== 'function') {
-      throw new Error('prisma.student.create is not a function. Prisma Client may need to be regenerated.');
-    }
-    
-    // Ensure only valid fields are passed to Prisma
+    // Ensure only valid fields are passed
     const data = {
       name: String(studentData.name || '').trim(),
       email: String(studentData.email || '').trim(),
@@ -65,17 +52,10 @@ export const addStudent = async (studentData) => {
     console.error('  Error name:', error.name);
     console.error('  Error message:', error.message);
     console.error('  Error code:', error.code);
-    console.error('  Error meta:', error.meta);
     console.error('  Stack:', error.stack);
     
     // Re-throw with more context
-    if (error.code) {
-      // Prisma error
-      throw error;
-    } else {
-      // Custom error
-      throw new Error(`Failed to create student: ${error.message}`);
-    }
+    throw new Error(`Failed to create student: ${error.message}`);
   }
 };
 
@@ -535,3 +515,4 @@ export const deleteBranch = async (id) => {
     where: { id: parseInt(id) }
   });
 };
+
